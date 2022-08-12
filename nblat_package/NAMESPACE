@@ -2,7 +2,10 @@
 
 S3method(print,nbhdLattice)
 S3method(print,set)
+export(as_set)
 export(computeLattice)
+export(nblat)
+export(nblat_decomp)
 export(rprec2)
 import(CVXR)
 import(Matrix)

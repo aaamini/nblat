@@ -1,3 +1,18 @@
+
+#### Oracle counter setup
+nblat_env = new.env()
+nblat_env$oracle_counter = 0L # global variable to keep track of the number of oracle calls
+
+reset_oracle_counter = function() {
+  nblat_env$oracle_counter = 0L
+}
+
+inc_oracle_counter = function() {
+  # cat('.')
+  nblat_env$oracle_counter = nblat_env$oracle_counter + 1
+}
+####
+
 #' @export
 nblat <- function(j, S, Sig, restricted_set=NULL, should_sort=T) {
   all_nodes = 1:nrow(Sig)
@@ -8,6 +23,15 @@ nblat <- function(j, S, Sig, restricted_set=NULL, should_sort=T) {
     supp(c)
   }
 
+  ci_oracle = function(j, k, m) {
+    inc_oracle_counter()
+    c = getParentCoefs2(j, union(k, m), Sig, threshold=T)$coefs
+    if (c[k] == 0) {
+      return(TRUE)
+    }
+    return(FALSE)
+  }
+
   if (is.null(restricted_set))  {
     restricted_set <- all_nodes
   }
@@ -16,10 +40,11 @@ nblat <- function(j, S, Sig, restricted_set=NULL, should_sort=T) {
   M <- S
   m <- get_mb(j, S)
   for (k in aux) {
-    propose <- union(k,M)
-    if ( setequal(get_mb(j, propose), m) ) {
-      M <- propose
-    }
+    if (ci_oracle(j, k, m)) M <- union(k,M)
+    # propose <- union(k,M)
+    # if ( setequal(get_mb(j, propose), m) ) {
+    #    M <- propose
+    # }
   }
 
   sort_or_not <- function(x) if (should_sort) sort(x) else x
@@ -32,10 +57,14 @@ nblat <- function(j, S, Sig, restricted_set=NULL, should_sort=T) {
   return ( lattice )
 }
 
-
+#' @export
 nblat_decomp <- function(j, Sig, should_sort=T) {
   all_nodes = 1:nrow(Sig)
   n <- length(all_nodes[-j])
+
+  reset_oracle_counter()
+  cat(sprintf('Oracle counter is = %d\n', nblat_env$oracle_counter))
+
   lats <- list()
   lats[[1]] <- nblat(j, all_nodes[-j], Sig, should_sort=should_sort)
   Mm_diff <- length(lats[[1]]$M) - length(lats[[1]]$m)
@@ -60,6 +89,7 @@ nblat_decomp <- function(j, Sig, should_sort=T) {
   cat("\r", total_num_covered, " out of ", 2^n,
       " (", round(total_num_covered / 2^n * 100,2), "%) covered.")
 
-  return(list(lats=lats, PO_count=PO_count))
+  list(lats=lats, PO_count=PO_count,
+       n_oracle_calls = nblat_env$oracle_counter)
 }
 
