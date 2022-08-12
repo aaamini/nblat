@@ -8,7 +8,7 @@ Use the following commant in R to install the package
 ```
 Then run the examples `Example7.R` and `Example9.R`
 
-# Unit tests
+# Running the tests
 Open the project file `nblat.Rproj` for the R package in Rstudio. Then run
 ```r
  devtools::test()
