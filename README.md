@@ -1,5 +1,7 @@
 # nblat
-Computes nbhd lattice decompositions
+Computes neighbourhood lattice decompositions. See the following paper for details:
+
+- [A non-graphical representation of conditional independence via the neighbourhood lattice](https://arxiv.org/abs/2206.05829)
 
 # Install
 Use the following command in R to install the package
